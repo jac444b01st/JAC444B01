@@ -44,8 +44,11 @@ private BufferedImage _img;
 private String _respStr;
 
 final JFileChooser fileSel = new JFileChooser(); //<- ADDED CODE//
-
+private int curZoom; //written by herman wu
+final JFrame zframe = new JFrame("Google Static Map"); //written by herman wu
 String uri;
+
+
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 // main method...
@@ -98,8 +101,9 @@ private void _setupTask() {
                                     Double.parseDouble(ttfLon.getText()),
                                     Integer.parseInt(ttfSizeW.getText()),
                                     Integer.parseInt(ttfSizeH.getText()),
-                                    Integer.parseInt(ttfZoom.getText())
-      );
+                                    //Integer.parseInt(ttfZoom.getText())
+                                    curZoom);
+      //);
       sout("Google Maps URI=" + uri);
 
       // get the map from Google
@@ -210,26 +214,27 @@ private SwingUIHookAdapter _initHook(SwingUIHookAdapter hook) {
 
 private void _displayImgInFrame() {
 
-  final JFrame frame = new JFrame("Google Static Map");
-  GUIUtils.setAppIcon(frame, "71.png");
-  frame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+  GUIUtils.setAppIcon(zframe, "71.png");
+  zframe.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
   JLabel imgLbl = new JLabel(new ImageIcon(_img));
   imgLbl.setToolTipText(MessageFormat.format("<html>Image downloaded from URI<br>size: w={0}, h={1}</html>",
                                              _img.getWidth(), _img.getHeight()));
+  
   imgLbl.addMouseListener(new MouseListener() {
     public void mouseClicked(MouseEvent e) {}
-    public void mousePressed(MouseEvent e) { frame.dispose();}
+    public void mousePressed(MouseEvent e) { zframe.dispose();}
     public void mouseReleased(MouseEvent e) { }
     public void mouseEntered(MouseEvent e) { }
     public void mouseExited(MouseEvent e) { }
   });
+  
+  zframe.setContentPane(imgLbl);
+  zframe.pack();
 
-  frame.setContentPane(imgLbl);
-  frame.pack();
-
-  GUIUtils.centerOnScreen(frame);
-  frame.setVisible(true);
+  GUIUtils.centerOnScreen(zframe);
+  zframe.setVisible(true);
+  enableZoom(); // <- Written by herman wu
   enableSaveEml(); //<- ADDED CODE//
 }
 
@@ -238,7 +243,7 @@ private void _displayRespStrInFrame() {
   final JFrame frame = new JFrame("Google Static Map - Error");
   GUIUtils.setAppIcon(frame, "69.png");
   frame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-
+  
   JTextArea response = new JTextArea(_respStr, 25, 80);
   response.addMouseListener(new MouseListener() {
     public void mouseClicked(MouseEvent e) {}
@@ -347,6 +352,7 @@ private void setPreset(String ht, String wd, String lat, String lon, String zm){
   ttfZoom.setText(zm);
 }
 
+
 private void emailForm(){
   JFrame frame = new JFrame("Send Email");
   
@@ -437,7 +443,12 @@ private void quitProgram() {
   _task.shutdown();
   System.exit(0);
 }
-
+private void enableZoom(){
+	if(_img != null){
+		btnZoomPlus.setEnabled(true);
+		btnZoomMinus.setEnabled(true);
+	}
+}
 private void initComponents() {
   //ADDED CODE ->//
   btnSavImg = new JButton();
@@ -448,6 +459,32 @@ private void initComponents() {
   receiver = new JTextField();
   sveeml = new JPanel();
   //<- ADDED CODE//
+  
+//created by herman wu
+btnZoomPlus = new JButton(" + ");
+btnZoomMinus = new JButton(" - ");
+btnZoomPlus.setEnabled(false);
+btnZoomMinus.setEnabled(false);
+btnZoomPlus.addActionListener(new ActionListener() {
+    public void actionPerformed(ActionEvent e) {
+    	if (e.getSource() == btnZoomPlus){
+    		curZoom++;
+    	}else if (e.getSource() == btnZoomMinus){
+    		curZoom--;
+    	}
+    	startTaskAction();
+}
+});
+btnZoomMinus.addActionListener(new ActionListener() {
+    public void actionPerformed(ActionEvent e) {
+    	if (e.getSource() == btnZoomMinus){
+    		curZoom--;
+    	}
+    	startTaskAction();
+}
+});
+zpl = new JPanel();
+
   
   // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
   // Generated using JFormDesigner non-commercial license
@@ -468,6 +505,7 @@ private void initComponents() {
   ttfLicense = new JTextField();
   label6 = new JLabel();
   ttfZoom = new JTextField();
+  curZoom = 10;
   scrollPane1 = new JScrollPane();
   ttaStatus = new JTextArea();
   panel2 = new JPanel();
@@ -629,8 +667,13 @@ private void initComponents() {
   			panel1.add(label6, new TableLayoutConstraints(0, 2, 0, 2, TableLayoutConstraints.FULL, TableLayoutConstraints.FULL));
 
   			//---- ttfZoom ----
-  			ttfZoom.setText("14");
-  			panel1.add(ttfZoom, new TableLayoutConstraints(1, 2, 1, 2, TableLayoutConstraints.FULL, TableLayoutConstraints.FULL));
+  			//ttfZoom.setText("14");
+  			GridLayout zg = new GridLayout(1,2);
+  			zpl.setLayout(zg);
+  			zpl.add(btnZoomPlus);
+  			zpl.add(btnZoomMinus);
+  			panel1.add(zpl , new TableLayoutConstraints(1, 2, 1, 2, TableLayoutConstraints.FULL, TableLayoutConstraints.FULL));
+  		
   		}
   		contentPanel.add(panel1, new TableLayoutConstraints(0, 0, 0, 0, TableLayoutConstraints.FULL, TableLayoutConstraints.FULL));
 
@@ -715,6 +758,10 @@ private JTextField sender;
 private JTextField receiver;
 private JPanel sveeml;
 //<- ADDED CODE//
+
+//created by herman wu
+private JButton btnZoomPlus, btnZoomMinus;
+private JPanel zpl;
 
 // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
 // Generated using JFormDesigner non-commercial license
